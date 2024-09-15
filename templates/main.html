@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT Video Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='darkmode.js') }}" defer></script>
+
+</head>
+<body>
+
+    <button id="theme-switch">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-280q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Z"/></svg>
+    </button>
+
+    <div class="form">
+        <div class="title">YouTube Video Downloader</div>
+        <div class="subtitle">Enter the YouTube link.</div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        {% if category == 'video' %}
+                            <div class="flash {{ 'success' if 'success' in category else 'error' }}">{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form id="linkForm" method="POST" action="/select_res">
+            <div class="input-container ic1">
+                <input id="link" class="input" type="text" name="link" placeholder=" " required />
+                <div class="cut"></div>
+                <label for="link" class="placeholder">Link</label>
+            </div>
+            <button type="submit" class="submit">Submit</button>
+        </form>
+    </div>
+
+    <div class="form">
+        <div class="title">YouTube Playlist Downloader</div>
+        <div class="subtitle">Enter the YouTube playlist link.</div>
+        <div class="subtitle">Be sure that playlist is public.</div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        {% if category == 'playlist' %}
+                            <div class="flash {{ 'success' if 'success' in category else 'error' }}">{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form id="linkForm" method="POST" action="/playlist">
+            <div class="input-container ic1">
+                <input id="playlist_link" class="input" type="text" name="playlist_link" placeholder=" " required />
+                <div class="cut"></div>
+                <label for="playlist_link" class="placeholder">Link</label>
+            </div>
+            <button type="submit" class="submit">Submit</button>
+        </form>
+    </div>
+
+<div class="form">
+    <div class="title">File Converter</div>
+    <div class="subtitle">Choose a file from your computer to convert.</div>
+    <div class="subtitle">Upload a MP4 file if you want to convert as WEBM file.</div>
+    <div class="subtitle">And same for the WEBM files.</div>
+    <div class="subtitle">MP4 <--> WEBM</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    {% if category == 'file' %}
+                        <div class="flash {{ 'success' if 'success' in category else 'error' }}">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form id="fileForm" method="POST" enctype="multipart/form-data">
+        <div class="input-container ic1">
+            <input id="file" class="input" type="file" name="file" accept=".mp4, .webm" required />
+            <div class="cut"></div>
+            <label for="file" class="placeholder">Select File</label>
+        </div>
+        <button type="submit" class="submit">Upload and Convert</button>
+    </form>
+
+    <!-- Progress Bar Container -->
+    <div id="progress-container" style="display: none">
+        <div id="progress-bar" class="progress-bar">
+            <div id="progress-bar-fill">0%</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('fileForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    const formData = new FormData(this);
+    const xhr = new XMLHttpRequest();
+
+    xhr.open('POST', '/convert', true);
+    xhr.responseType = 'json'; // Expect a JSON response
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            const { task_id } = xhr.response;
+
+            // Handle conversion progress
+            function updateProgress() {
+                fetch(`/progress/${task_id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const progressBarFill = document.getElementById('progress-bar-fill');
+                        progressBarFill.style.width = data.progress + '%';
+                        progressBarFill.textContent = Math.round(data.progress) + '%';
+
+                        if (data.message === "Conversion complete!") {
+                            // Automatically trigger download when conversion is complete
+                            fetch(`/download/${task_id}`)
+                                .then(response => {
+                                    if (response.ok) {
+                                        return response.blob();
+                                    } else {
+                                        throw new Error('File not found');
+                                    }
+                                })
+                                .then(blob => {
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = 'converted_file'; // Default filename, customize as needed
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                    document.body.removeChild(a);
+
+                                    // Reset and hide the progress bar
+                                    progressBarFill.style.width = '0%';
+                                    progressBarFill.textContent = '0%';
+                                    document.getElementById('progress-container').style.display = 'none';
+                                })
+                                .catch(error => console.error('Error during file download:', error));
+                        } else if (data.progress < 100) {
+                            setTimeout(updateProgress, 1000);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching progress:', error));
+            }
+
+            document.getElementById('progress-container').style.display = 'block';
+            updateProgress();
+        } else {
+            console.error('Error during file upload:', xhr.statusText);
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error('Error during file upload:', xhr.statusText);
+    };
+
+    xhr.send(formData);
+});
+
+</script>
+
+</body>
+</html>

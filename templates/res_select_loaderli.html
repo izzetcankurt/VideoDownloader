@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Resolution</title>
+    <style>
+        body {
+            background-color: #f7f8fc;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .form {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input {
+            background-color: #f7f8fc;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input:focus {
+            border-color: #007bff;
+        }
+
+        .cut {
+            position: absolute;
+            top: -15px;
+            left: 10px;
+            background-color: #fff;
+            padding: 0 5px;
+            font-size: 14px;
+            color: #999;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .cut.cut-short {
+            width: 50px;
+        }
+
+        .placeholder {
+            position: absolute;
+            top: 12px;
+            left: 10px;
+            font-size: 14px;
+            color: #999;
+            transition: all 0.3s ease;
+        }
+
+        .input:focus ~ .placeholder,
+        .input:not(:placeholder-shown) ~ .placeholder {
+            top: -15px;
+            left: 10px;
+            font-size: 12px;
+            color: #007bff;
+        }
+
+        .submit {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit:hover {
+            background-color: #0056b3;
+        }
+
+        .back-button {
+            background-color: #6c757d;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+
+        .select-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        select {
+            background-color: #f7f8fc;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            text-align-last: center; /* Center the select text */
+        }
+
+        select:focus {
+            border-color: #007bff;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .barrier {
+            height: 1px;
+            background-color: #ccc;
+            margin: 20px 0;
+        }
+
+        /* Spinner styles */
+        .loader {
+            width: 120px;
+            height: 55px;
+            display: block;
+            margin: 10px auto 0; /* Adjusted margin */
+            background-image: radial-gradient(circle 17px at 17px 17px, #FFF 100%, transparent 0), radial-gradient(circle 34px at 34px 34px, #FFF 100%, transparent 0), radial-gradient(circle 17px at 17px 17px, #FFF 100%, transparent 0), linear-gradient(#FFF 34px, transparent 0);
+            background-size: 34px 34px, 68px 51px, 34px 34px, 82px 27px;
+            background-position: 0px 21px, 25px 0px, 83px 21px, 17px 27px;
+            background-repeat: no-repeat;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .loader::after {
+            content: '';
+            left: 50%;
+            bottom: 0;
+            transform: translate(-50%, 0);
+            position: absolute;
+            border: 10px solid transparent;
+            border-top-color: #888888;
+            box-sizing: border-box;
+            animation: fadePush 1s linear infinite;
+        }
+        .loader::before {
+            content: '';
+            left: 50%;
+            bottom: 21px;
+            transform: translate(-50%, 0);
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #888888;
+            box-sizing: border-box;
+            animation: fadePush 1s linear infinite;
+        }
+
+        @keyframes fadePush {
+            0% {
+                transform: translate(-50%, -10px);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, 0px);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, 10px);
+                opacity: 0;
+            }
+        }
+
+        .video-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .video-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <button type="button" class="back-button" onclick="window.history.back()">Back</button>
+    </div>
+
+    <div class="form">
+        <div class="video-info">
+            <img src="{{ thumbnail_url }}" alt="Video Thumbnail" width="320" height="180">
+            <div class="video-title">{{ video_title }}</div>
+        </div>
+    </div>
+
+    <div class="form">
+        <div class="title">Select a resolution for your video</div>
+        <div class="subtitle">Choose MP4 or WEBM format</div>
+        <div class="form-group">
+            <form id="formA" method="POST" action="/download_video_a">
+                <label>MP4</label>
+                <div class="input-container">
+                    <input type="hidden" name="link" value="{{ link }}">
+                    <label for="resolution" class="placeholder">Select a resolution:</label>
+                    <div class="select-container">
+                        <select id="resolution" name="resolution" required>
+                            {% if res_list_mp4 %}
+                                {% for res in res_list_mp4 %}
+                                    <option value="{{ res }}">{{ res }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled>No option</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="submit">Submit</button>
+                <span class="loader" id="spinnerA" style="display: none;"></span>
+            </form>
+            <div class="barrier"></div>
+            <form id="formB" method="POST" action="/download_video_b">
+                <label>WEBM</label>
+                <div class="input-container">
+                    <input type="hidden" name="link" value="{{ link }}">
+                    <label for="resolution" class="placeholder">Select a resolution:</label>
+                    <div class="select-container">
+                        <select id="resolution" name="resolution" required>
+                            {% if res_list_webm %}
+                                {% for res in res_list_webm %}
+                                    <option value="{{ res }}">{{ res }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled>No option</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="submit">Submit</button>
+                <span class="loader" id="spinnerB" style="display: none;"></span>
+            </form>
+        </div>
+    </div>
+    <br>
+    <div class="form">
+        <div class="title">Download Audio</div>
+        <div class="subtitle">Just download as audio</div>
+        <form id="formC" method="POST" action="/download_audio">
+            <input type="hidden" name="link" value="{{ link }}">
+            <button type="submit" class="submit">Download Audio</button>
+            <span class="loader" id="spinnerC" style="display: none;"></span>
+        </form>
+    </div>
+
+    <br>
+    <div class="form">
+        <div class="title">Download Subtitles</div>
+        <div class="subtitle">Select a language code</div>
+        <form id="formD" method="POST" action="/download_subtitle">
+            <input type="hidden" name="link" value="{{ link }}">
+            <div class="input-container">
+                <label for="lang" class="placeholder">Select a language code:</label>
+                <div class="select-container">
+                    <select id="lang" name="lang" required>
+                        {% if lang_list %}
+                            {% for lang in lang_list %}
+                                <option value="{{ lang }}">{{ lang }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled>No option</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="submit">Submit</button>
+            <span class="loader" id="spinnerD" style="display: none;"></span>
+        </form>
+    </div>
+    <br>
+    <div style="text-align: center;">
+        <button type="button" class="back-button" onclick="window.history.back()">Back</button>
+    </div>
+
+
+    <script>
+async function handleFormSubmission(formId, spinnerId) {
+    const form = document.getElementById(formId);
+    const spinner = document.getElementById(spinnerId);
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        spinner.style.display = 'block'; // Display the spinner below the button
+
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            // Extract the filename from the Content-Disposition header
+            const disposition = response.headers.get('Content-Disposition');
+            const matches = /filename="([^"]+)"/.exec(disposition);
+            const filename = matches ? matches[1] : 'downloaded_file';
+
+            const blob = await response.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = filename;  // Set the filename here
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            // Reset form and hide spinner
+            form.reset();
+            spinner.style.display = 'none';
+        } else {
+            // Handle error
+            console.error('Download failed');
+            spinner.style.display = 'none';
+        }
+    });
+}
+
+handleFormSubmission('formA', 'spinnerA');
+handleFormSubmission('formB', 'spinnerB');
+handleFormSubmission('formC', 'spinnerC');
+handleFormSubmission('formD', 'spinnerD');
+</script>
+
+
+</body>
+</html>

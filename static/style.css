@@ -1,0 +1,325 @@
+        :root{
+            --all-background: #f7f8fc;
+            --form-background: #fff;
+            --text-color: #000;
+            --progress-bg: #f3f3f3;
+            --placeholder-color: #999;
+            --inp-color: #000;
+            --border-color: #ddd;
+        }
+
+        .darkmode{
+            --all-background: #26262a;
+            --form-background: #34343f;
+            --text-color: #fff;
+            --progress-bg: rgba(243, 243, 243, 0.2);
+            --placeholder-color: #d5d5d5;
+            --inp-color: #fff;
+            --border-color: rgba(183, 188, 255, 0.4);
+        }
+
+        body {
+            background-color: var(--all-background);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .form {
+            background-color: var(--form-background);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 30px;
+            color: var(--text-color);
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: center; /* Ensures the input container centers its content */
+        }
+
+        .input {
+            background-color: var(--all-background);
+            color: var(--inp-color);
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            width: 94%;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input:focus {
+            border-color: #007bff;
+        }
+
+        .cut {
+            position: absolute;
+            top: -15px;
+            left: 10px;
+            background-color: var(--form-background);
+            padding: 0 5px;
+            font-size: 14px;
+            color: #999;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .cut.cut-short {
+            width: 50px;
+        }
+
+        .placeholder {
+            position: absolute;
+            top: 12px;
+            left: 10px;
+            font-size: 14px;
+            color: var(--placeholder-color);
+            transition: all 0.3s ease;
+        }
+
+        .input:focus ~ .placeholder,
+        .input:not(:placeholder-shown) ~ .placeholder {
+            top: -15px;
+            left: 10px;
+            font-size: 12px;
+            color: #007bff;
+        }
+
+        .submit {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit:hover {
+            background-color: #0056b3;
+        }
+
+        .back-button {
+            background-color: #6c757d;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+
+        .select-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        select {
+            background-color: var(--all-background);
+            color: var(--text-color);
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            text-align-last: center; /* Center the select text */
+        }
+
+        select:focus {
+            border-color: #007bff;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .barrier {
+            height: 1px;
+            background-color: #ccc;
+            margin: 20px 0;
+        }
+
+        /* Spinner styles */
+        .loader {
+            width: 120px;
+            height: 55px;
+            display: block;
+            margin: 10px auto 0; /* Adjusted margin */
+            background-image: radial-gradient(circle 17px at 17px 17px, #FFF 100%, transparent 0), radial-gradient(circle 34px at 34px 34px, #FFF 100%, transparent 0), radial-gradient(circle 17px at 17px 17px, #FFF 100%, transparent 0), linear-gradient(#FFF 34px, transparent 0);
+            background-size: 34px 34px, 68px 51px, 34px 34px, 82px 27px;
+            background-position: 0px 21px, 25px 0px, 83px 21px, 17px 27px;
+            background-repeat: no-repeat;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .loader::after {
+            content: '';
+            left: 50%;
+            bottom: 0;
+            transform: translate(-50%, 0);
+            position: absolute;
+            border: 10px solid transparent;
+            border-top-color: #888888;
+            box-sizing: border-box;
+            animation: fadePush 1s linear infinite;
+        }
+        .loader::before {
+            content: '';
+            left: 50%;
+            bottom: 21px;
+            transform: translate(-50%, 0);
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #888888;
+            box-sizing: border-box;
+            animation: fadePush 1s linear infinite;
+        }
+
+        @keyframes fadePush {
+            0% {
+                transform: translate(-50%, -10px);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, 0px);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, 10px);
+                opacity: 0;
+            }
+        }
+
+        .video-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .video-title {
+            color: var(--text-color);
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .video-time {
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: 400; /* Reduces boldness */
+            margin-top: 10px;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .flash.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        /* Progress Bar Styles */
+        /* Progress Bar Container */
+        #progress-container, #progress-container-webm, #progress-container-lang, progress-container-audio, #progress-container-vid, progress-container-aud {
+            display: flex;
+            flex-direction: row; /* Align progress bars horizontally */
+            gap: 10px; /* Space between progress bars */
+            margin-top: 20px;
+        }
+
+        /* Common Styles for Progress Bars */
+        .progress-bar {
+            flex: 1; /* Allow progress bars to grow and fill available space */
+            min-width: 150px; /* Minimum width to prevent overly narrow bars */
+        }
+
+        /* Individual Progress Bar Styles */
+        #progress-bar, #progress-bar-vid, #progress-bar-aud, #progress-bar-video, #progress-bar-audio, #progress-bar-merge, #progress-bar-video-webm, #progress-bar-audio-webm, #progress-bar-video-lang, #progress-bar-audio-lang, #progress-bar-merge-lang, #progress-bar-audio-audio, #progress-bar-merge-audio {
+            background-color: var(--progress-bg);
+            border: 1px solid var(--border-color);
+            color: var(--progress-bg);
+            border-radius: 15px; /* Rounded corners */
+            height: 20px; /* Adjust height for thickness */
+            overflow: hidden; /* Prevent content from spilling over corners */
+        }
+
+        #progress-bar-fill, #progress-bar-fill-vid, #progress-bar-fill-aud, #progress-bar-fill, #progress-bar-fill-video, #progress-bar-fill-audio, #progress-bar-fill-merge, #progress-bar-fill-video-webm, #progress-bar-fill-audio-webm, #progress-bar-fill-video-lang, #progress-bar-fill-audio-lang, #progress-bar-fill-merge-lang, #progress-bar-fill-audio-audio, #progress-bar-fill-merge-audio {
+            height: 100%; /* Fill height of the progress bar */
+            width: 0; /* Start with 0 width */
+            background-color: #A0CEFF; /* Blue color */
+            text-align: center;
+            color: white;
+            line-height: 20px; /* Center text vertically */
+            border-radius: 15px; /* Match border-radius of container */
+            transition: width 0.25s; /* Smooth transition for progress changes */
+            font-size: 11px; /* Smaller font size */
+        }
+
+        #theme-switch{
+            height: 50px;
+            width: 50px;
+            padding: 0;
+            border-radius: 50%;
+            background-color: var(--form-background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            border-color: var(--border-color);
+        }
+
+        #theme-switch svg{
+            fill: var(--placeholder-color);
+        }
+
+        #theme-switch svg:last-child{
+            display: none;
+        }
+
+        .darkmode #theme-switch svg:first-child{
+            display: none;
+        }
+
+        .darkmode #theme-switch svg:last-child{
+            display: block;
+        }

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Resolution and Type</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='darkmode.js') }}" defer></script>
+
+</head>
+<body>
+    <button id="theme-switch">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M480-280q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Z"/></svg>
+    </button>
+
+    <div style="text-align: center;">
+        <button type="button" class="back-button" onclick="window.history.back()">Back</button>
+    </div>
+
+    <div class="form">
+        <div class="video-info">
+            <img src="{{ thumbnail_url }}" alt="Video Thumbnail" width="320" height="180">
+            <div class="video-title">{{ video_title }}</div>
+            <div class="video-time">Time : {{ video_time }}</div>
+        </div>
+    </div>
+
+    <div class="form">
+        <div class="title">Select a resolution for your video</div>
+        <div class="subtitle">Choose MP4 or WEBM format</div>
+        <div class="form-group">
+            <form id="formA" method="POST" action="/download_video_a">
+                <label class="subtitle">MP4</label>
+                <div class="input-container">
+                    <input type="hidden" name="link" value="{{ link }}">
+                    <label for="resolution" class="placeholder">Select a resolution:</label>
+                    <div class="select-container">
+                        <select id="resolution" name="resolution" required>
+                            {% if res_list_mp4 %}
+                                {% for res in res_list_mp4 %}
+                                    <option value="{{ res }}">{{ res }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled>No option</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="submit">Download MP4</button>
+
+            </form>
+            <!-- Progress Bar Container -->
+                <div id="progress-container" style="display: none;">
+                    <div id="progress-bar-video" class="progress-bar">
+                        <div id="progress-bar-fill-video">0%</div>
+                    </div>
+                    <div id="progress-bar-audio" class="progress-bar">
+                        <div id="progress-bar-fill-audio">0%</div>
+                    </div>
+                    <div id="progress-bar-merge" class="progress-bar">
+                        <div id="progress-bar-fill-merge">0%</div>
+                    </div>
+                </div>
+            <div class="barrier"></div>
+            <form id="formB" method="POST" action="/download_video_b">
+                <label class="subtitle">WEBM</label>
+                <div class="input-container">
+                    <input type="hidden" name="link" value="{{ link }}">
+                    <label for="resolution" class="placeholder">Select a resolution:</label>
+                    <div class="select-container">
+                        <select id="resolution" name="resolution" required>
+                            {% if res_list_webm %}
+                                {% for res in res_list_webm %}
+                                    <option value="{{ res }}">{{ res }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled>No option</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="submit">Download WEBM</button>
+
+            </form>
+            <div id="progress-container-webm" style="display: none;">
+                <div id="progress-bar-video-webm" class="progress-bar">
+                    <div id="progress-bar-fill-video-webm">0%</div>
+                </div>
+                <div id="progress-bar-audio-webm" class="progress-bar">
+                    <div id="progress-bar-fill-audio-webm">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <div class="form">
+        <div class="title">Download Video with Subtitles</div>
+        <div class="subtitle">Select a language code and resolution</div>
+        <form id="formE" method="POST" action="/download_v_subtitle">
+            <input type="hidden" name="link" value="{{ link }}">
+
+            <div class="input-container">
+                    <input type="hidden" name="link" value="{{ link }}">
+                    <label for="resolution" class="placeholder">Select a resolution:</label>
+                    <div class="select-container">
+                        <select id="resolution" name="resolution" required>
+                            {% if res_list_mp4 %}
+                                {% for res in res_list_mp4 %}
+                                    <option value="{{ res }}">{{ res }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled>No option</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+
+            <div class="input-container">
+                <label for="lang" class="placeholder">Select a language code:</label>
+                <div class="select-container">
+                    <select id="lang" name="lang" required>
+                        {% if lang_list %}
+                            {% for lang in lang_list %}
+                                <option value="{{ lang }}">{{ lang }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled>No option</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="submit">Submit</button>
+
+        </form>
+        <!-- Progress Bar Container -->
+                <div id="progress-container-lang" style="display: none;">
+                    <div id="progress-bar-video-lang" class="progress-bar">
+                        <div id="progress-bar-fill-video-lang">0%</div>
+                    </div>
+                    <div id="progress-bar-audio-lang" class="progress-bar">
+                        <div id="progress-bar-fill-audio-lang">0%</div>
+                    </div>
+                    <div id="progress-bar-merge-lang" class="progress-bar">
+                        <div id="progress-bar-fill-merge-lang">0%</div>
+                    </div>
+                </div>
+    </div>
+
+    <br>
+    <div class="form">
+        <div class="title">Download Audio</div>
+        <div class="subtitle">Just download as audio</div>
+        <form id="formC" method="POST" action="/download_audio">
+            <input type="hidden" name="link" value="{{ link }}">
+            <button type="submit" class="submit">Download Audio</button>
+        </form>
+            <div id="progress-container-audio" style="display: none;">
+                <div id="progress-bar-audio-audio" class="progress-bar">
+                    <div id="progress-bar-fill-audio-audio">0%</div>
+                </div>
+                <div id="progress-bar-merge-audio" class="progress-bar">
+                    <div id="progress-bar-fill-merge-audio">0%</div>
+                </div>
+            </div>
+    </div>
+
+    <br>
+    <div class="form">
+        <div class="title">Download Subtitles</div>
+        <div class="subtitle">Select a language code</div>
+        <form id="formD" method="POST" action="/download_subtitle">
+            <input type="hidden" name="link" value="{{ link }}">
+            <div class="input-container">
+                <label for="lang" class="placeholder">Select a language code:</label>
+                <div class="select-container">
+                    <select id="lang" name="lang" required>
+                        {% if lang_list %}
+                            {% for lang in lang_list %}
+                                <option value="{{ lang }}">{{ lang }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled>No option</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="submit">Submit</button>
+            <span class="loader" id="spinnerD" style="display: none;"></span>
+        </form>
+    </div>
+    <br>
+    <div style="text-align: center;">
+        <button type="button" class="back-button" onclick="window.history.back()">Back</button>
+    </div>
+
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    handleFormSubmission('formA', '/progress_mp4');
+    handleFormSubmissionWebm('formB', '/progress_webm');
+    handleFormSubmissionLang('formE', '/progress_mp4');
+    handleFormSubmissionAudio('formC', '/progress_mp4');
+
+});
+
+function handleFormSubmission(formId, progressEndpoint) {
+    const form = document.getElementById(formId);
+    const is_mp4_normal = {{ is_mp4_normal | tojson }};
+
+    if (is_mp4_normal === true) {
+            const progressContainer = document.getElementById('progress-container');
+            const progressBarFillVideo = document.getElementById('progress-bar-fill-video');
+            const progressBarFillAudio = document.getElementById('progress-bar-fill-audio');
+            const progressBarFillMerge = document.getElementById('progress-bar-fill-merge');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                progressContainer.style.display = 'block';
+
+                const formData = new FormData(form);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', form.action, true);
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        const taskId = result.task_id;
+                        const filePath = result.file_path;
+
+                        const intervalId = setInterval(function() {
+                            fetchProgress(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
+                                videoBar: progressBarFillVideo,
+                                audioBar: progressBarFillAudio,
+                                mergeBar: progressBarFillMerge
+                            });
+                        }, 1000);
+            } else {
+                console.error('Form submission error:', xhr.responseText);
+            }
+        };
+
+        xhr.send(formData);
+    });
+    } else {
+        const progressContainer = document.getElementById('progress-container');
+        const progressBarFillVideo_w = document.getElementById('progress-bar-fill-video');
+        const progressBarFillAudio_w = document.getElementById('progress-bar-fill-audio');
+        const progressBarFillMerge_w = document.getElementById('progress-bar-fill-merge');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            progressContainer.style.display = 'block';
+
+            const formData = new FormData(form);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', form.action, true);
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const result = JSON.parse(xhr.responseText);
+                    const taskId = result.task_id;
+                    const filePath = result.file_path;
+
+                    const intervalId = setInterval(function() {
+                        fetchProgress(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
+                            videoBar_w: progressBarFillVideo_w,
+                            audioBar_w: progressBarFillAudio_w,
+                            mergeBar_w: progressBarFillMerge_w
+                        });
+                    }, 1000);
+                } else {
+                    console.error('Form submission error:', xhr.responseText);
+                }
+            };
+
+            xhr.send(formData);
+        });
+    }
+
+
+}
+
+function fetchProgress(progressEndpoint, taskId, intervalId, progressContainer, filePath, progressBars) {
+    const progressXhr = new XMLHttpRequest();
+    progressXhr.open('GET', `${progressEndpoint}/${taskId}`, true);
+    progressXhr.onload = function() {
+        if (progressXhr.status === 200) {
+            const progressData = JSON.parse(progressXhr.responseText);
+            console.log(`Fetched progress for task ${taskId}:`, progressData);
+
+            // Update progress bars
+            if (progressBars.videoBar) {
+                progressBars.videoBar.style.width = `${progressData.video_download || 0}%`;
+                progressBars.videoBar.innerText = `${Math.round(progressData.video_download || 0)}%`;
+            }
+
+            if (progressBars.audioBar) {
+                progressBars.audioBar.style.width = `${progressData.audio_download || 0}%`;
+                progressBars.audioBar.innerText = `${Math.round(progressData.audio_download || 0)}%`;
+            }
+
+            if (progressBars.mergeBar) {
+                progressBars.mergeBar.style.width = `${progressData.merge || 0}%`;
+                progressBars.mergeBar.innerText = `${Math.round(progressData.merge || 0)}%`;
+            }
+
+            if (progressBars.videoBar_w) {
+                progressBars.videoBar_w.style.width = `${progressData.video_download_w || 0}%`;
+                progressBars.videoBar_w.innerText = `${Math.round(progressData.video_download_w || 0)}%`;
+            }
+
+            if (progressBars.audioBar_w) {
+                progressBars.audioBar_w.style.width = `${progressData.audio_download_w || 0}%`;
+                progressBars.audioBar_w.innerText = `${Math.round(progressData.audio_download_w || 0)}%`;
+            }
+
+            if (progressBars.mergeBar_w) {
+                progressBars.mergeBar_w.style.width = `${progressData.convert || 0}%`;
+                progressBars.mergeBar_w.innerText = `${Math.round(progressData.convert || 0)}%`;
+            }
+
+            if (progressData.message === "Conversion complete!" || progressData.message === "Merging complete!") {
+                clearInterval(intervalId);
+                progressContainer.style.display = 'none';
+                if (filePath) {
+                    // Handle file download
+                    window.location.href = filePath;
+                }
+            }
+        } else {
+            console.error('Progress check error:', progressXhr.responseText);
+        }
+    };
+    progressXhr.send();
+}
+
+
+function handleFormSubmissionWebm(formId, progressEndpoint) {
+    const form = document.getElementById(formId);
+    const progressContainer = document.getElementById('progress-container-webm');
+    const progressBarFillVideo = document.getElementById('progress-bar-fill-video-webm');
+    const progressBarFillAudio = document.getElementById('progress-bar-fill-audio-webm');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        progressContainer.style.display = 'block';
+
+        const formData = new FormData(form);
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action, true);
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const result = JSON.parse(xhr.responseText);
+                const taskId = result.task_id;
+                const filePath = result.file_path;
+
+                const intervalId = setInterval(function() {
+                    fetchProgress(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
+                        videoBar: progressBarFillVideo,
+                        audioBar: progressBarFillAudio
+                    });
+                }, 1000);
+            } else {
+                console.error('Form submission error:', xhr.responseText);
+            }
+        };
+
+        xhr.send(formData);
+    });
+}
+
+function fetchProgress2(progressEndpoint, taskId, intervalId, progressContainer, filePath, progressBars) {
+    const progressXhr = new XMLHttpRequest();
+    progressXhr.open('GET', `${progressEndpoint}/${taskId}`, true);
+    progressXhr.onload = function() {
+        if (progressXhr.status === 200) {
+            const progressData = JSON.parse(progressXhr.responseText);
+            console.log(`Fetched progress for task ${taskId}:`, progressData);
+
+            // Update progress bars
+            if (progressBars.videoBar) {
+                progressBars.videoBar.style.width = `${progressData.video_download || 0}%`;
+                progressBars.videoBar.innerText = `${Math.round(progressData.video_download || 0)}%`;
+            }
+
+            if (progressBars.audioBar) {
+                progressBars.audioBar.style.width = `${progressData.audio_download || 0}%`;
+                progressBars.audioBar.innerText = `${Math.round(progressData.audio_download || 0)}%`;
+            }
+
+            if (progressBars.mergeBar) {
+                progressBars.mergeBar.style.width = `${progressData.merge || 0}%`;
+                progressBars.mergeBar.innerText = `${Math.round(progressData.merge || 0)}%`;
+            }
+
+            if (progressBars.videoBar_w) {
+                progressBars.videoBar_w.style.width = `${progressData.video_download_w || 0}%`;
+                progressBars.videoBar_w.innerText = `${Math.round(progressData.video_download_w || 0)}%`;
+            }
+
+            if (progressBars.audioBar_w) {
+                progressBars.audioBar_w.style.width = `${progressData.audio_download_w || 0}%`;
+                progressBars.audioBar_w.innerText = `${Math.round(progressData.audio_download_w || 0)}%`;
+            }
+
+            if (progressBars.mergeBar_w) {
+                progressBars.mergeBar_w.style.width = `${progressData.convert || 0}%`;
+                progressBars.mergeBar_w.innerText = `${Math.round(progressData.convert || 0)}%`;
+            }
+
+            if (progressBars.langBar) {
+                progressBars.langBar.style.width = `${progressData.lang || 0}%`;
+                progressBars.langBar.innerText = `${Math.round(progressData.lang || 0)}%`;
+            }
+
+            if (progressData.message === "Subtitle added.") {
+                clearInterval(intervalId);
+                progressContainer.style.display = 'none';
+                if (filePath) {
+                    // Handle file download
+                    window.location.href = filePath;
+                }
+            }
+        } else {
+            console.error('Progress check error:', progressXhr.responseText);
+        }
+    };
+    progressXhr.send();
+}
+
+
+    function handleFormSubmissionLang(formId, progressEndpoint) {
+        const form = document.getElementById(formId);
+        const is_mp4_normal = {{ is_mp4_normal | tojson }};
+
+        if (is_mp4_normal === true) {
+                const progressContainer = document.getElementById('progress-container-lang');
+                const progressBarFillVideo = document.getElementById('progress-bar-fill-video-lang');
+                const progressBarFillMerge = document.getElementById('progress-bar-fill-audio-lang');
+                const progressBarFillLang = document.getElementById('progress-bar-fill-merge-lang');
+
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    progressContainer.style.display = 'block';
+
+                    const formData = new FormData(form);
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', form.action, true);
+
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            const result = JSON.parse(xhr.responseText);
+                            const taskId = result.task_id;
+                            const filePath = result.file_path;
+
+                            const intervalId = setInterval(function() {
+                                fetchProgress2(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
+                                    videoBar: progressBarFillVideo,
+                                    mergeBar: progressBarFillMerge,
+                                    langBar: progressBarFillLang
+                                });
+                            }, 1000);
+                } else {
+                    console.error('Form submission error:', xhr.responseText);
+                }
+            };
+
+            xhr.send(formData);
+        });
+        } else {
+            const progressContainer = document.getElementById('progress-container-lang');
+            const progressBarFillVideo_w = document.getElementById('progress-bar-fill-video-lang');
+            const progressBarFillMerge_w = document.getElementById('progress-bar-fill-audio-lang');
+            const progressBarFillLang = document.getElementById('progress-bar-fill-merge-lang');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                progressContainer.style.display = 'block';
+
+                const formData = new FormData(form);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', form.action, true);
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        const taskId = result.task_id;
+                        const filePath = result.file_path;
+
+                        const intervalId = setInterval(function() {
+                            fetchProgress2(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
+                                videoBar_w: progressBarFillVideo_w,
+                                mergeBar_w: progressBarFillMerge_w,
+                                langBar: progressBarFillLang
+                            });
+                        }, 1000);
+                    } else {
+                        console.error('Form submission error:', xhr.responseText);
+                    }
+                };
+
+                xhr.send(formData);
+            });
+        }
+
+
+    }
+
+    function fetchProgress3(progressEndpoint, taskId, intervalId, progressContainer, filePath, progressBars) {
+    const progressXhr = new XMLHttpRequest();
+    progressXhr.open('GET', `${progressEndpoint}/${taskId}`, true);
+    progressXhr.onload = function() {
+        if (progressXhr.status === 200) {
+            const progressData = JSON.parse(progressXhr.responseText);
+            console.log(`Fetched progress for task ${taskId}:`, progressData);
+
+            // Update progress bars
+            if (progressBars.audioBar) {
+                progressBars.audioBar.style.width = `${progressData.audio_download || 0}%`;
+                progressBars.audioBar.innerText = `${Math.round(progressData.audio_download || 0)}%`;
+            }
+
+            if (progressBars.audioBar_w) {
+                progressBars.audioBar_w.style.width = `${progressData.audio_download_w || 0}%`;
+                progressBars.audioBar_w.innerText = `${Math.round(progressData.audio_download_w || 0)}%`;
+            }
+
+            if (progressBars.mergeBar_w) {
+                progressBars.mergeBar_w.style.width = `${progressData.convert || 0}%`;
+                progressBars.mergeBar_w.innerText = `${Math.round(progressData.convert || 0)}%`;
+            }
+
+            if (progressData.message === "Completed!") {
+                clearInterval(intervalId);
+                progressContainer.style.display = 'none';
+                if (filePath) {
+                    // Handle file download
+                    window.location.href = filePath;
+                }
+            }
+        } else {
+            console.error('Progress check error:', progressXhr.responseText);
+        }
+    };
+    progressXhr.send();
+}
+
+    function handleFormSubmissionAudio(formId, progressEndpoint) {
+        const form = document.getElementById(formId);
+        const is_mp4_normal = {{ is_mp4_normal | tojson }};
+
+        if (is_mp4_normal === true) {
+            const progressContainer = document.getElementById('progress-container-audio');
+            const progressBarFillAudio = document.getElementById('progress-bar-fill-audio-audio');
+            const progressBarFillMerge = document.getElementById('progress-bar-fill-merge-audio');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                progressContainer.style.display = 'block';
+
+                const formData = new FormData(form);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', form.action, true);
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        const taskId = result.task_id;
+                        const filePath = result.file_path;
+
+                        const intervalId = setInterval(function() {
+                            fetchProgress3(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
+                                audioBar: progressBarFillAudio,
+
+                            });
+                        }, 1000);
+                    } else {
+                        console.error('Form submission error:', xhr.responseText);
+                    }
+                };
+
+                xhr.send(formData);
+            });}
+        else{
+            const progressContainer = document.getElementById('progress-container-audio');
+            const progressBarFillAudio = document.getElementById('progress-bar-fill-audio-audio');
+            const progressBarFillMerge = document.getElementById('progress-bar-fill-merge-audio');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                progressContainer.style.display = 'block';
+                const formData = new FormData(form);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', form.action, true);
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        const taskId = result.task_id;
+                        const filePath = result.file_path;
+
+                        const intervalId = setInterval(function() {
+                            fetchProgress3(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
+                                audioBar_w: progressBarFillAudio,
+                                mergeBar_w: progressBarFillMerge
+                            });
+                        }, 1000);
+                    } else {
+                        console.error('Form submission error:', xhr.responseText);
+                    }
+                };
+
+                xhr.send(formData);
+            });
+        }
+}
+
+
+</script>
+
+
+
+</body>
+</html>
