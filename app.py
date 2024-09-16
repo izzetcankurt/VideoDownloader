@@ -436,12 +436,11 @@ def select_res():
     is_mp4_normal = True
     try:
         print("AAAAAAAAAAAAAAAAAAAAAAAA")
-        yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+        yt = YouTube(link, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
         print("BBBBBBBBBBBBBBBBBBBBBBBB")
-        # captions = yt.captions
+        captions = yt.captions
         print("CCCCCCCCCCCCCCCCCCCCCCCC")
-        # lang_list = [caption.code for caption in captions]
-        lang_list = ["a", "b"]
+        lang_list = [caption.code for caption in captions]
         print("DDDDDDDDDDDDDDDDDDDDDDDD")
         stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
         print("EEEEEEEEEEEEEEEEEEEEEEEE")
