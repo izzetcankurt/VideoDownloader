@@ -436,7 +436,7 @@ def select_res():
     is_mp4_normal = True
     try:
         print("AAAAAAAAAAAAAAAAAAAAAAAA")
-        yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+        yt = YouTube(link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
         print("BBBBBBBBBBBBBBBBBBBBBBBB")
         captions = yt.captions
         print("CCCCCCCCCCCCCCCCCCCCCCCC")
