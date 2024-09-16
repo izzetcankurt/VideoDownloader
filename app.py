@@ -28,7 +28,7 @@ token_file = os.path.join(os.getcwd(), "tokens.json")
 
 def down_video(link, resolution, formatted_time, task_id, upload_folder):
     global progress_status_mp4
-    yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: video_progress_callback(stream, chunk, bytes_remaining, task_id), use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: video_progress_callback(stream, chunk, bytes_remaining, task_id), use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     video = yt.streams.filter(res=resolution, file_extension='mp4', only_video=True).first()
     video_file = video.download(output_path=upload_folder, filename=("v_" + str(formatted_time) + '.mp4'))
     return video_file
@@ -42,7 +42,7 @@ def video_progress_callback(stream, chunk, bytes_remaining, task_id):
 
 def down_audio(link, formatted_time, task_id, upload_folder):
     global progress_status_mp4
-    yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: audio_progress_callback(stream, chunk, bytes_remaining, task_id), use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: audio_progress_callback(stream, chunk, bytes_remaining, task_id), use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     audio = yt.streams.filter(only_audio=True, file_extension='mp4').order_by('itag').desc().first()
     audio_file = audio.download(output_path=upload_folder, filename=("a_" + str(formatted_time) + '.mp3'))
     audio_bit = ((audio.abr).replace("kbps", "")) + "k"
@@ -67,7 +67,7 @@ def down_video_and_audio(link, resolution,formatted_time, task_id, upload_folder
 
 def down_video_webm(link, resolution, formatted_time, task_id, upload_folder):
     global progress_status_webm
-    yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: video_progress_callback_webm(stream, chunk, bytes_remaining, task_id), use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: video_progress_callback_webm(stream, chunk, bytes_remaining, task_id), use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     video = yt.streams.filter(res=resolution, file_extension='webm', only_video=True).first()
     video_file = video.download(output_path=upload_folder, filename=("v_" + str(formatted_time) + '.webm'))
     return video_file
@@ -84,7 +84,7 @@ def video_progress_callback_webm(stream, chunk, bytes_remaining, task_id):
 
 def down_audio_webm(link, formatted_time, task_id, upload_folder):
     global progress_status_webm
-    yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: audio_progress_callback_webm(stream, chunk, bytes_remaining, task_id), use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: audio_progress_callback_webm(stream, chunk, bytes_remaining, task_id), use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     audio = yt.streams.filter(only_audio=True, file_extension='webm').order_by('itag').desc().first()
     audio_file = audio.download(output_path=upload_folder, filename=("a_" + str(formatted_time) + '.webm'))
     return audio_file
@@ -435,7 +435,7 @@ def select_res():
     res_list_webm = []
     is_mp4_normal = True
     try:
-        yt = YouTube(link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+        yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
         captions = yt.captions
         lang_list = [caption.code for caption in captions]
         stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
@@ -480,7 +480,7 @@ def downloadvideo(task_id, time):
 @app.route('/download_video_a', methods=["POST", "GET"])
 def download_video_a():
     link = request.form.get('link')
-    yt = YouTube(link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
     filtered_stream = [s for s in stream if s.codecs and s.codecs[0].startswith("av01")]
     resolution = request.form.get('resolution')
@@ -595,7 +595,7 @@ def download_video_b():
 @app.route('/download_v_subtitle', methods=["POST"])
 def download_v_subtitle():
     link = request.form.get('link')
-    yt = YouTube(link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
     filtered_stream = [s for s in stream if s.codecs and s.codecs[0].startswith("av01")]
     resolution = request.form.get('resolution')
@@ -708,7 +708,7 @@ def download_audio():
     }
     out = os.path.join(upload_folder, f'af_{formatted_time}.mp3')
     try:
-        yt = YouTube(link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+        yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
         stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
         filtered_stream = [s for s in stream if s.codecs and s.codecs[0].startswith("av01")]
         if len(filtered_stream)==0:
@@ -769,7 +769,7 @@ def download_subtitle():
     now = datetime.now()
     formatted_time = now.strftime('%H_%M_%S')
     try:
-        yt = YouTube(link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+        yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
         caption = yt.captions[lang]
         if caption:
             caption_file = os.path.join(upload_folder, f'caption_{formatted_time}.txt')
@@ -785,8 +785,8 @@ def download_subtitle():
 def playlist():
     playlist_link = request.form.get('playlist_link')
     try:
-        pl = Playlist(playlist_link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
-        thumbnail_url = YouTube(pl.video_urls[0], use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file).thumbnail_url
+        pl = Playlist(playlist_link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+        thumbnail_url = YouTube(pl.video_urls[0], use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file).thumbnail_url
         video_title = pl.title
 
         return render_template('playlist.html', playlist_link=playlist_link, thumbnail_url=thumbnail_url,
@@ -806,13 +806,13 @@ def compress_folder(folder_path, output_filename):
 def download_audio(task_id, playlist_link, upload_folder, output):
     global progress_status_list_aud
     progress_status_list_aud[task_id] = {"audio_download": 0, "audio_total": 0, "status":"Downloading"}
-    pl = Playlist(playlist_link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    pl = Playlist(playlist_link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     all_links = pl.video_urls
 
     try:
         progress_status_list_aud[task_id]["audio_total"] = len(all_links)
         for link in all_links:
-            yt = YouTube(link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+            yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
             # Existing logic for downloading audio
             stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
             filtered_stream = [s for s in stream if s.codecs and s.codecs[0].startswith("av01")]
@@ -852,7 +852,7 @@ def download_audio(task_id, playlist_link, upload_folder, output):
 def download_video(task_id, playlist_link, upload_folder, final_folder, output):
     global progress_status_list_vid
     progress_status_list_vid[task_id] = {"video_download": 0, "video_total": 0, "status":"Downloading"}
-    pl = Playlist(playlist_link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    pl = Playlist(playlist_link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     all_links = pl.video_urls
     try:
         progress_status_list_vid[task_id]["video_total"] = len(all_links)
@@ -860,7 +860,7 @@ def download_video(task_id, playlist_link, upload_folder, final_folder, output):
         formatted_time = now.strftime('%H_%M_%S')
 
         for i, link in enumerate(all_links):
-            yt = YouTube(link, use_po_token=True, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+            yt = YouTube(link, use_po_token=False, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
             stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
             filtered_stream = [s for s in stream if s.codecs and s.codecs[0].startswith("av01")]
             final_video_path2 = os.path.join(final_folder, (str(yt.title) + '.mp4'))
