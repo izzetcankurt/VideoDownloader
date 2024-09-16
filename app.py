@@ -441,6 +441,7 @@ def select_res():
         # captions = yt.captions
         print("CCCCCCCCCCCCCCCCCCCCCCCC")
         # lang_list = [caption.code for caption in captions]
+        lang_list = ["a", "b"]
         print("DDDDDDDDDDDDDDDDDDDDDDDD")
         stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
         print("EEEEEEEEEEEEEEEEEEEEEEEE")
