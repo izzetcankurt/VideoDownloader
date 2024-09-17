@@ -61,6 +61,9 @@
                     <div id="progress-bar-merge" class="progress-bar">
                         <div id="progress-bar-fill-merge">0%</div>
                     </div>
+                    <div id="progress-bar-convert" class="progress-bar">
+                        <div id="progress-bar-fill-convert">0%</div>
+                    </div>
                 </div>
             <div class="barrier"></div>
             <form id="formB" method="POST" action="/download_video_b">
@@ -89,6 +92,9 @@
                 </div>
                 <div id="progress-bar-audio-webm" class="progress-bar">
                     <div id="progress-bar-fill-audio-webm">0%</div>
+                </div>
+                <div id="progress-bar-merge-webm" class="progress-bar">
+                    <div id="progress-bar-fill-merge-webm">0%</div>
                 </div>
             </div>
         </div>
@@ -249,6 +255,7 @@ function handleFormSubmission(formId, progressEndpoint) {
         const progressBarFillVideo_w = document.getElementById('progress-bar-fill-video');
         const progressBarFillAudio_w = document.getElementById('progress-bar-fill-audio');
         const progressBarFillMerge_w = document.getElementById('progress-bar-fill-merge');
+        const progressBarFillConvert = document.getElementById('progress-bar-fill-convert');
 
         form.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -268,7 +275,8 @@ function handleFormSubmission(formId, progressEndpoint) {
                         fetchProgress(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
                             videoBar_w: progressBarFillVideo_w,
                             audioBar_w: progressBarFillAudio_w,
-                            mergeBar_w: progressBarFillMerge_w
+                            mergeBar_w: progressBarFillMerge_w,
+                            convert: progressBarFillConvert
                         });
                     }, 1000);
                 } else {
@@ -318,8 +326,13 @@ function fetchProgress(progressEndpoint, taskId, intervalId, progressContainer, 
             }
 
             if (progressBars.mergeBar_w) {
-                progressBars.mergeBar_w.style.width = `${progressData.convert || 0}%`;
-                progressBars.mergeBar_w.innerText = `${Math.round(progressData.convert || 0)}%`;
+                progressBars.mergeBar_w.style.width = `${progressData.merge_w || 0}%`;
+                progressBars.mergeBar_w.innerText = `${Math.round(progressData.merge_w || 0)}%`;
+            }
+
+            if (progressBars.convert) {
+                progressBars.convert.style.width = `${progressData.convert || 0}%`;
+                progressBars.convert.innerText = `${Math.round(progressData.convert || 0)}%`;
             }
 
             if (progressData.message === "Conversion complete!" || progressData.message === "Merging complete!") {

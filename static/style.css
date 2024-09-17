@@ -272,7 +272,7 @@
         }
 
         /* Individual Progress Bar Styles */
-        #progress-bar, #progress-bar-vid, #progress-bar-aud, #progress-bar-video, #progress-bar-audio, #progress-bar-merge, #progress-bar-video-webm, #progress-bar-audio-webm, #progress-bar-video-lang, #progress-bar-audio-lang, #progress-bar-merge-lang, #progress-bar-audio-audio, #progress-bar-merge-audio {
+        #progress-bar, #progress-bar-vid, #progress-bar-aud, #progress-bar-video, #progress-bar-audio, #progress-bar-merge, #progress-bar-video-webm, #progress-bar-audio-webm, #progress-bar-video-lang, #progress-bar-audio-lang, #progress-bar-merge-lang, #progress-bar-audio-audio, #progress-bar-merge-audio, #progress-bar-convert, #progress-bar-merge-webm {
             background-color: var(--progress-bg);
             border: 1px solid var(--border-color);
             color: var(--progress-bg);
@@ -281,7 +281,7 @@
             overflow: hidden; /* Prevent content from spilling over corners */
         }
 
-        #progress-bar-fill, #progress-bar-fill-vid, #progress-bar-fill-aud, #progress-bar-fill, #progress-bar-fill-video, #progress-bar-fill-audio, #progress-bar-fill-merge, #progress-bar-fill-video-webm, #progress-bar-fill-audio-webm, #progress-bar-fill-video-lang, #progress-bar-fill-audio-lang, #progress-bar-fill-merge-lang, #progress-bar-fill-audio-audio, #progress-bar-fill-merge-audio {
+        #progress-bar-fill, #progress-bar-fill-vid, #progress-bar-fill-aud, #progress-bar-fill, #progress-bar-fill-video, #progress-bar-fill-audio, #progress-bar-fill-merge, #progress-bar-fill-video-webm, #progress-bar-fill-audio-webm, #progress-bar-fill-video-lang, #progress-bar-fill-audio-lang, #progress-bar-fill-merge-lang, #progress-bar-fill-audio-audio, #progress-bar-fill-merge-audio, #progress-bar-fill-convert, #progress-bar-fill-merge-webm {
             height: 100%; /* Fill height of the progress bar */
             width: 0; /* Start with 0 width */
             background-color: #A0CEFF; /* Blue color */

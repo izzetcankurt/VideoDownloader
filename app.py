@@ -180,8 +180,10 @@ def merge_video_and_audio_webm(video_file, audio_file, output_file, task_id):
                 progress = (current_time / total_duration) * 100
                 try:
                     progress_status_webm[task_id]["merge"] = progress
+                    progress_status_webm[task_id]["message"] = "Merging..."
                 except:
-                    progress_status_mp4[task_id]["merge"] = progress
+                    progress_status_mp4[task_id]["merge_w"] = progress
+                    progress_status_mp4[task_id]["message"] = "Merging..."
                 time.sleep(1)  # Update every second
                 if current_time >= total_duration:
                     break
@@ -294,10 +296,10 @@ def convert_webm_to_mp4(input_file, output_file, task_id):
         # Update progress status to 100% on completion
         try:
             progress_status[task_id]["progress"] = 100
-            progress_status[task_id]["message"] = "Video converted!"
+            progress_status[task_id]["message"] = "Conversion complete!"
         except:
             progress_status_mp4[task_id]["convert"] = 100
-            progress_status_mp4[task_id]["message"] = "Video converted!"    
+            progress_status_mp4[task_id]["message"] = "Conversion complete!"
     except Exception as e:
         try:
             progress_status[task_id]["message"] = f"Error converting video: {e}"
