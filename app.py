@@ -10,6 +10,7 @@ from pytubefix import YouTube, Playlist
 import subprocess
 from werkzeug.utils import secure_filename
 import re
+from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips
 
 app = Flask(__name__)
 app.secret_key = 'Secret35'
@@ -109,29 +110,33 @@ def down_video_and_audio_webm(link, resolution,formatted_time, task_id, upload_f
 def merge_video_and_audio(video_file, audio_file, output_file, task_id):
     global progress_status_mp4
     try:
-        command = [
-            'ffmpeg',
-            '-i', video_file,
-            '-i', audio_file,
-            '-c:v', 'libx264',
-            '-preset', 'ultrafast',
-            '-c:a', 'aac',
-            '-strict', 'experimental',
-            output_file
-        ]
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, universal_newlines=True)
-        total_duration = get_video_duration(video_file)
-        for line in process.stderr:
-            if 'time=' in line:
-                time_match = re.search(r'time=(\d+:\d+:\d+\.\d+)', line)
-                if time_match:
-                    current_time_str = time_match.group(1)
-                    current_time = sum(float(x) * 60 ** i for i, x in enumerate(reversed(current_time_str.split(':'))))
-                    progress_status_mp4[task_id]["merge"] = (current_time / total_duration) * 100
-                    progress_status_mp4[task_id]["message"] = "Merging..."
-        process.wait()
-        progress_status_mp4[task_id]["message"] = "Merging complete!"
+        video_clip = VideoFileClip(video_file)
+        audio_clip = AudioFileClip(audio_file)
+        
+        # Set audio to video clip
+        video_clip = video_clip.set_audio(audio_clip)
+        
+        def track_progress():
+            total_duration = video_clip.duration
+            while True:
+                current_time = video_clip.reader.pos / video_clip.reader.fps
+                progress = (current_time / total_duration) * 100
+                progress_status_mp4[task_id]["merge"] = progress
+                time.sleep(1)  # Update every second
+                if current_time >= total_duration:
+                    break
+        
+        from threading import Thread
+        progress_thread = Thread(target=track_progress)
+        progress_thread.start()
+
+        # Write the result to a file
+        video_clip.write_videofile(output_file, codec='libx264', audio_codec='aac', threads=4)
+        
+        progress_thread.join()
+        # Update progress
         progress_status_mp4[task_id]["merge"] = 100
+        progress_status_mp4[task_id]["message"] = "Merging complete!"
     except Exception as e:
         progress_status_mp4[task_id]["message"] = f"Error merging video: {e}"
 
@@ -155,40 +160,42 @@ def progress_mp4(task_id):
 def merge_video_and_audio_webm(video_file, audio_file, output_file, task_id):
     global progress_status_webm
     try:
-        command = [
-            'ffmpeg',
-            '-i', video_file,
-            '-i', audio_file,
-            '-c', 'copy',
-            output_file
-        ]
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, universal_newlines=True)
-        total_duration = get_video_duration(video_file)
-        for line in process.stderr:
-            if 'time=' in line:
-                time_match = re.search(r'time=(\d+:\d+:\d+\.\d+)', line)
-                if time_match:
-                    current_time_str = time_match.group(1)
-                    current_time = sum(float(x) * 60 ** i for i, x in enumerate(reversed(current_time_str.split(':'))))
-                    try:
-                        progress_status_webm[task_id]["merge"] = (current_time / total_duration) * 100
-                        progress_status_webm[task_id]["message"] = "Merging..."
-                    except:
-                        progress_status_mp4[task_id]["merge_w"] = (current_time / total_duration) * 100
-                        progress_status_mp4[task_id]["message"] = "Merging..."
-        process.wait()
+        video_clip = VideoFileClip(video_file)
+        audio_clip = AudioFileClip(audio_file)
+        
+        # Set audio to video clip
+        video_clip = video_clip.set_audio(audio_clip)
+
+        def track_progress():
+            total_duration = video_clip.duration
+            while True:
+                current_time = video_clip.reader.pos / video_clip.reader.fps
+                progress = (current_time / total_duration) * 100
+                try:
+                    progress_status_webm[task_id]["merge"] = progress
+                except:
+                    progress_status_mp4[task_id]["merge"] = progress
+                time.sleep(1)  # Update every second
+                if current_time >= total_duration:
+                    break
+        
+        from threading import Thread
+        progress_thread = Thread(target=track_progress)
+        progress_thread.start()
+        
+        # Write the result to a file
+        video_clip.write_videofile(output_file, codec='libvpx', audio_codec='libvorbis', threads=4)
+        
+        progress_thread.join()
+        # Update progress
         try:
-            progress_status_webm[task_id]["message"] = "Merging complete!"
             progress_status_webm[task_id]["merge"] = 100
+            progress_status_webm[task_id]["message"] = "Merging complete!"
         except:
             progress_status_mp4[task_id]["merge_w"] = 100
             progress_status_mp4[task_id]["message"] = "Merge complete!"
-
     except Exception as e:
-        try:
-            progress_status_webm[task_id]["message"] = f"Error merging video: {e}"
-        except:
-            progress_status_mp4[task_id]["message"] = f"Error merging video: {e}"
+        progress_status_webm[task_id]["message"] = f"Error merging video: {e}"
 
 @app.route('/progress_webm/<task_id>')
 def progress_webm(task_id):
