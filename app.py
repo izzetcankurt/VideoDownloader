@@ -263,37 +263,41 @@ def get_video_duration(input_file):
 def convert_webm_to_mp4(input_file, output_file, task_id):
     global progress_status
     try:
-        command = [
-            'ffmpeg',
-            '-i', input_file,
-            '-c:v', 'libx264',
-            '-c:a', 'aac',
-            '-strict', 'experimental',
-            '-b:v', '1M',
-            '-b:a', '128k',
-            output_file
-        ]
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, universal_newlines=True)
-        for line in process.stderr:
-            if 'time=' in line:
-                time_match = re.search(r'time=(\d+:\d+:\d+\.\d+)', line)
-                if time_match:
-                    current_time_str = time_match.group(1)
-                    current_time = sum(float(x) * 60 ** i for i, x in enumerate(reversed(current_time_str.split(':'))))
-                    total_duration = get_video_duration(input_file)
-                    try:
-                        progress_status[task_id]["progress"] = (current_time / total_duration) * 100
-                        progress_status[task_id]["message"] = "Video converting..."
-                    except:
-                        progress_status_mp4[task_id]["convert"] = (current_time / total_duration) * 100
-                        progress_status_mp4[task_id]["message"] = "Video converting..."
-        process.wait()
+        video_clip = VideoFileClip(input_file)
+        total_duration = video_clip.duration
+        
+        def track_progress():
+            while True:
+                # Compute progress based on the current position in the video
+                current_time = video_clip.reader.pos / video_clip.reader.fps
+                progress = (current_time / total_duration) * 100
+                try:
+                    progress_status[task_id]["progress"] = progress
+                    progress_status[task_id]["message"] = "Video converting..."
+                except:
+                    progress_status_mp4[task_id]["convert"] = progress
+                    progress_status_mp4[task_id]["message"] = "Video converting..."
+                time.sleep(1)  # Update every second
+                if current_time >= total_duration:
+                    break
+        
+        # Start a thread to track progress
+        progress_thread = threading.Thread(target=track_progress)
+        progress_thread.start()
+        
+        # Write the video file to the desired output format
+        video_clip.write_videofile(output_file, codec='libx264', audio_codec='aac', threads=4)
+        
+        # Wait for the progress tracking thread to finish
+        progress_thread.join()
+        
+        # Update progress status to 100% on completion
         try:
             progress_status[task_id]["progress"] = 100
             progress_status[task_id]["message"] = "Video converted!"
         except:
             progress_status_mp4[task_id]["convert"] = 100
-            progress_status_mp4[task_id]["message"] = "Merging complete!"
+            progress_status_mp4[task_id]["message"] = "Video converted!"    
     except Exception as e:
         try:
             progress_status[task_id]["message"] = f"Error converting video: {e}"
@@ -303,27 +307,30 @@ def convert_webm_to_mp4(input_file, output_file, task_id):
 def convert_mp4_to_webm(input_file, output_file, task_id):
     global progress_status
     try:
-        command = [
-            'ffmpeg',
-            '-i', input_file,
-            '-c:v', 'libvpx',
-            '-preset', 'ultrafast',
-            '-b:v', '1M',
-            '-c:a', 'libvorbis',
-            '-b:a', '128k',
-            output_file
-        ]
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, universal_newlines=True)
-        for line in process.stderr:
-            if 'time=' in line:
-                time_match = re.search(r'time=(\d+:\d+:\d+\.\d+)', line)
-                if time_match:
-                    current_time_str = time_match.group(1)
-                    current_time = sum(float(x) * 60 ** i for i, x in enumerate(reversed(current_time_str.split(':'))))
-                    total_duration = get_video_duration(input_file)
-                    progress_status[task_id]["progress"] = (current_time / total_duration) * 100
-                    progress_status[task_id]["message"] = "Video converting..."
-        process.wait()
+        video_clip = VideoFileClip(input_file)
+
+        def track_progress():
+            total_duration = video_clip.duration
+            while True:
+                current_time = video_clip.reader.pos / video_clip.reader.fps
+                progress = (current_time / total_duration) * 100
+                progress_status[task_id]["progress"] = progress
+                progress_status[task_id]["message"] = "Video converting..."
+                if current_time >= total_duration:
+                    break
+                time.sleep(1)  # Update every second
+
+        from threading import Thread
+        progress_thread = Thread(target=track_progress)
+        progress_thread.start()
+
+        # Convert MP4 to WebM
+        video_clip.write_videofile(output_file, codec='libvpx', audio_codec='libvorbis', bitrate='1M', threads=4)
+
+        progress_thread.join()
+        progress_status[task_id]["progress"] = 100
+        progress_status[task_id]["message"] = "Video converted!"
+
     except Exception as e:
         progress_status[task_id]["message"] = f"Error converting video: {e}"
 
@@ -675,7 +682,7 @@ def download_v_subtitle():
                     caption_file = f'caption_{formatted_time}.srt'
                     with open(caption_file, 'w', encoding='utf-8') as file:
                         file.write(caption.generate_srt_captions())
-                # Convert paths to use forward slashes for ffmpeg
+                        
                 final_video_path2 = final_video_path.replace("\\", "/")
                 final_video = os.path.join(upload_folder, f'video_{formatted_time}.mp4')
                 final_video = final_video.replace("\\", "/")
@@ -745,31 +752,37 @@ def download_audio():
 def conv(audio_file, out, task_id):
     global progress_status_mp4
     try:
-        command = [
-            'ffmpeg',
-            '-i', audio_file,  # Input file
-            '-vn',  # No video
-            '-acodec', 'libmp3lame',  # Audio codec
-            '-ab', '192k',  # Audio bitrate
-            out  # Output file
-        ]
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, universal_newlines=True)
-        total_duration = get_video_duration(audio_file)
-        progress_status_mp4[task_id]["audio_download_w"]=100
-        for line in process.stderr:
-            if 'time=' in line:
-                time_match = re.search(r'time=(\d+:\d+:\d+\.\d+)', line)
-                if time_match:
-                    current_time_str = time_match.group(1)
-                    current_time = sum(float(x) * 60 ** i for i, x in enumerate(reversed(current_time_str.split(':'))))
-                    progress_status_mp4[task_id]["convert"] = (current_time / total_duration) * 100
-                    progress_status_mp4[task_id]["message"] = "Merging..."
-        process.wait()
+        # Load the audio file with MoviePy
+        audio_clip = AudioFileClip(audio_file)
+        total_duration = audio_clip.duration
+        
+        progress_status_mp4[task_id]["audio_download_w"] = 100
+
+        # Create a function to track the conversion progress
+        def track_progress():
+            while True:
+                current_time = audio_clip.reader.pos / audio_clip.reader.fps
+                progress = (current_time / total_duration) * 100
+                progress_status_mp4[task_id]["convert"] = progress
+                progress_status_mp4[task_id]["message"] = "Converting..."
+                time.sleep(1)  # Update every second
+                if current_time >= total_duration:
+                    break
+
+        from threading import Thread
+        progress_thread = Thread(target=track_progress)
+        progress_thread.start()
+
+        # Convert and save the file as MP3
+        audio_clip.write_audiofile(out, codec='mp3', bitrate='192k')
+
+        progress_thread.join()
+        
+        # Mark the task as completed
         progress_status_mp4[task_id]["message"] = "Completed!"
         progress_status_mp4[task_id]["convert"] = 100
     except Exception as e:
-        progress_status_mp4[task_id]["message"] = "Error!"
-
+        progress_status_mp4[task_id]["message"] = f"Error: {e}"
 
 @app.route('/download_subtitle', methods=["POST"])
 def download_subtitle():
@@ -833,26 +846,20 @@ def download_audio(task_id, playlist_link, upload_folder, output):
             if len(filtered_stream) == 0:
                 audio = yt.streams.filter(only_audio=True, file_extension='webm').order_by('itag').desc().first()
                 audio_file = audio.download(output_path=upload_folder, filename=(str(yt.title) + '.webm'))
+                # Convert the audio file to MP3 using MoviePy
+                audio_clip = AudioFileClip(audio_file)
                 out = os.path.join(upload_folder, (str(yt.title) + '.mp3'))
-                command = [
-                    'ffmpeg',
-                    '-i', audio_file,  # Input file
-                    '-vn',  # No video
-                    '-acodec', 'libmp3lame',  # Audio codec
-                    '-ab', '192k',  # Audio bitrate
-                    out  # Output file
-                ]
-                subprocess.run(command, check=True)
+                audio_clip.write_audiofile(out, codec='mp3', bitrate='192k')
                 if os.path.exists(audio_file):
                     os.remove(audio_file)
             else:
                 audio = yt.streams.filter(only_audio=True, file_extension='mp4').order_by('itag').desc().first()
-                audio_file = audio.download(output_path=upload_folder, filename=(str(yt.title) + '_temp.mp3'))
-                audio_bit = ((audio.abr).replace("kbps", "")) + "k"
+                audio_file = audio.download(output_path=upload_folder, filename=(str(yt.title) + '_temp.mp4'))
+                
+                audio_clip = AudioFileClip(audio_file)
                 audio_file_final = os.path.join(upload_folder, f'{str(yt.title)}.mp3')
-                subprocess.run([
-                    'ffmpeg', '-i', audio_file, '-b:a', audio_bit, audio_file_final
-                ])
+                audio_clip.write_audiofile(audio_file_final, codec='mp3')
+
                 if os.path.exists(audio_file):
                     os.remove(audio_file)
 
@@ -908,57 +915,44 @@ def download_video(task_id, playlist_link, upload_folder, final_folder, output):
 
 def merge_video_and_audio_list(video_file, audio_file, output_file):
     try:
-        command = [
-            'ffmpeg',
-            '-i', video_file,
-            '-i', audio_file,
-            '-c:v', 'libx264',
-            '-preset', 'ultrafast',
-            '-c:a', 'aac',
-            '-strict', 'experimental',
-            output_file
-        ]
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, universal_newlines=True)
-        # Capture stderr for error messages
-        _, stderr = process.communicate()
-        if process.returncode != 0:
-            return f"Error merging video and audio: {stderr}"
+        # Load video and audio clips
+        video_clip = VideoFileClip(video_file)
+        audio_clip = AudioFileClip(audio_file)
+        
+        # Set the audio to the video clip
+        final_clip = video_clip.set_audio(audio_clip)
+        
+        # Write the result to the output file
+        final_clip.write_videofile(output_file, codec='libx264', audio_codec='aac')
+        
         return "Merging completed successfully"
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
 def merge_video_and_audio_list_webm(video_file, audio_file, output_file):
     try:
-        command = [
-            'ffmpeg',
-            '-i', video_file,
-            '-i', audio_file,
-            '-c', 'copy',
-            output_file
-        ]
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, universal_newlines=True)
-        process.wait()
+        # Load the video and audio clips
+        video_clip = VideoFileClip(video_file)
+        audio_clip = AudioFileClip(audio_file)
+        
+        # Set the audio to the video clip
+        final_clip = video_clip.set_audio(audio_clip)
+        
+        # Write the result to the output file in WebM format
+        final_clip.write_videofile(output_file, codec='libvpx', audio_codec='libvorbis')
+        
+        return "Merging completed successfully"
     except Exception as e:
-        return "There is error while merge."
+        return f"There is an error while merging: {str(e)}"
 
 def convert_webm_to_mp4_list(input_file, output_file):
     try:
-        command = [
-            'ffmpeg',
-            '-i', input_file,
-            '-c:v', 'libx264',
-            '-c:a', 'aac',
-            '-strict', 'experimental',
-            '-b:v', '1M',
-            '-b:a', '128k',
-            output_file
-        ]
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, universal_newlines=True)
-        # Capture stderr for error messages
-        _, stderr = process.communicate()
-        # Check if the process was successful
-        if process.returncode != 0:
-            return f"Error converting WebM to MP4: {stderr}"
+        # Load the WebM video file (with audio)
+        video_clip = VideoFileClip(input_file)
+        
+        # Write the output as MP4 with the desired codecs
+        video_clip.write_videofile(output_file, codec='libx264', audio_codec='aac', bitrate="1M")
+        
         return "Conversion completed successfully"
     except Exception as e:
         return f"An error occurred: {str(e)}"

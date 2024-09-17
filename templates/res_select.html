@@ -361,7 +361,7 @@ function handleFormSubmissionWebm(formId, progressEndpoint) {
                 const intervalId = setInterval(function() {
                     fetchProgress(progressEndpoint, taskId, intervalId, progressContainer, filePath, {
                         videoBar: progressBarFillVideo,
-                        audioBar: progressBarFillAudio
+                        mergeBar: progressBarFillAudio
                     });
                 }, 1000);
             } else {
