@@ -44,14 +44,21 @@ def video_progress_callback(stream, chunk, bytes_remaining, task_id):
 def down_audio(link, formatted_time, task_id, upload_folder):
     global progress_status_mp4
     yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: audio_progress_callback(stream, chunk, bytes_remaining, task_id), use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+    
+    # Download the audio file (assuming it downloads in .mp4 format)
     audio = yt.streams.filter(only_audio=True, file_extension='mp4').order_by('itag').desc().first()
-    audio_file = audio.download(output_path=upload_folder, filename=("a_" + str(formatted_time) + '.mp3'))
-    audio_bit = ((audio.abr).replace("kbps", "")) + "k"
+    audio_file = audio.download(output_path=upload_folder, filename=("a_" + str(formatted_time) + '.mp4'))
+    
+    # Convert the audio file to MP3 using MoviePy
+    audio_clip = AudioFileClip(audio_file)
     audio_file_final = os.path.join(upload_folder, f'af_{formatted_time}.mp3')
-    subprocess.run([
-        'ffmpeg', '-i', audio_file, '-b:a', audio_bit, audio_file_final
-    ])
+    audio_clip.write_audiofile(audio_file_final, codec='mp3')
+    
+    # Clean up the intermediate file if necessary
+    os.remove(audio_file)
+    
     return audio_file_final
+
 
 def audio_progress_callback(stream, chunk, bytes_remaining, task_id):
     total_size = stream.filesize
@@ -87,7 +94,7 @@ def down_audio_webm(link, formatted_time, task_id, upload_folder):
     global progress_status_webm
     yt = YouTube(link, on_progress_callback=lambda stream, chunk, bytes_remaining: audio_progress_callback_webm(stream, chunk, bytes_remaining, task_id), use_oauth=True, allow_oauth_cache=True, token_file=token_file)
     audio = yt.streams.filter(only_audio=True, file_extension='webm').order_by('itag').desc().first()
-    audio_file = audio.download(output_path=upload_folder, filename=("a_" + str(formatted_time) + '.webm'))
+    audio_file = audio.download(output_path=upload_folder, filename=("af_" + str(formatted_time) + '.webm'))
     return audio_file
 
 def audio_progress_callback_webm(stream, chunk, bytes_remaining, task_id):
@@ -514,7 +521,7 @@ def download_video_a():
         "message": ""
     }
     video_file_path = os.path.join(upload_folder, f'v_{formatted_time}.mp4')
-    audio_file_path = os.path.join(upload_folder, f'a_{formatted_time}.mp3')
+    audio_file_path = os.path.join(upload_folder, f'af_{formatted_time}.mp3')
     convert_video_path = os.path.join(upload_folder, f'c_{formatted_time}.webm')
     final_video_path = os.path.join(upload_folder, f'video_{formatted_time}.mp4')
 
@@ -630,7 +637,7 @@ def download_v_subtitle():
     }
 
     video_file_path = os.path.join(upload_folder, f'v_{formatted_time}.mp4')
-    audio_file_path = os.path.join(upload_folder, f'a_{formatted_time}.mp3')
+    audio_file_path = os.path.join(upload_folder, f'af_{formatted_time}.mp3')
     convert_video_path = os.path.join(upload_folder, f'c_{formatted_time}.webm')
     final_video_path = os.path.join(upload_folder, f'vid_{formatted_time}.mp4')
     try:
