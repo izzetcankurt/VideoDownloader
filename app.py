@@ -454,14 +454,19 @@ def download(task_id):
 @app.route('/select_res', methods=["POST"])
 def select_res():
     link = request.form.get('link')
+    print(link)
     res_list_mp4 = []
     res_list_webm = []
     is_mp4_normal = True
     try:
         yt = YouTube(link, use_oauth=True, allow_oauth_cache=True, token_file=token_file)
+
         captions = yt.captions
+
         lang_list = [caption.code for caption in captions]
+
         stream = yt.streams.filter(file_extension='mp4').order_by('resolution').desc()
+        print("Sıkıntı stream kısmında!!!")
         stream2 = yt.streams.filter(file_extension='webm').order_by('resolution').desc()
         filtered_stream = [s for s in stream if s.codecs and s.codecs[0].startswith("av01")]
         if len(filtered_stream) == 0:
@@ -476,16 +481,15 @@ def select_res():
                 res_list_webm.append(i.resolution)
             if not i.resolution in res_list_mp4:
                 res_list_mp4.append(i.resolution)
-
         thumbnail_url = yt.thumbnail_url
         video_title = yt.title
         times = yt.length
         minutes, seconds = divmod(times, 60)
         video_time = f"{minutes} minutes, {seconds} seconds."
-
         return render_template('res_select.html', res_list_mp4=res_list_mp4, link=link, lang_list=lang_list, res_list_webm=res_list_webm,thumbnail_url=thumbnail_url,
             video_title=video_title, video_time=video_time, is_mp4_normal=is_mp4_normal)
     except Exception as e:
+        print(e)
         flash("Invalid link or error occurred. Please check the link and try again.", "video")
         return redirect(url_for('main'))
 
